@@ -1,0 +1,238 @@
+\section{Introduction}
+
+The Skipgram (SG) approach for learning solely word embeddings is introduced by Mikolov et al. (2013a). The SG model tries to use a word to infer its surrounding context. SG models greatly simplify the standard neural netword-based architecture to only contain a linear projection input layer and an output softmax layer.
+
+\section{Background}
+
+
+\subsection{A motivating example}
+Each token in our model is represented by a 100 dimensional vector space. To visualize our model, here we use t-Distributed Neighbor Embedding (t-SNE), a technique for dimensionality reduction that is particulary well suited for the visualization of high-dimensional datasets. 
+
+In Figure 1, each pair of similar tokens are close together, e.g \textit{\textbf{if (\text{C\#})}} should be closest to \textit{\textbf{if (Java)}} and clusters with similar functionality should be located close to each other than other clusters, e.g the \textit{\textbf{if}} cluster should be closer to the \textit{\textbf{for}} cluster because both \textit{\textbf{if}} and \textit{\textbf{for}} are control statement.
+
+\begin{figure}[t!]
+	\includegraphics[width=0.55\textwidth]{example_bi2vec_tsne}
+	\caption{A visualization of shared embeddings for between \text{C\#} and Java.}
+	\label{fig:clf}
+\end{figure}
+
+\section{Our Approach}
+
+
+\subsection{Overview}
+Figure 2 is the overview of our framework. There are 4 steps:
+\begin{description}
+	\item [$\bullet$] Clones alignment : Collect data crosslingually and align clones.
+	\item [$\bullet$] Preprocessing: Preprocess the aligned data
+	\item [$\bullet$] Token Alignment: Train the aligned clones to get the aligned information between tokens
+	\item [$\bullet$] BiSkip Training: Get the shared embedding vector representation for all of the tokens in all languages.
+\end{description}
+
+\begin{figure}[t!]
+	\includegraphics[width=0.45\textwidth]{steps}
+	\caption{An overview of our framework}
+	\label{fig:clf}
+\end{figure}
+ 
+
+
+
+\subsection{Data Normalizing}
+
+In Natural Language Processing, the data normalizing step is a process to remove uninteresting contents from the dataset and transform the rest into normalized comparison units. In our case, we are performing Programming Language Processing, beside removing uninteresting contents, we add more semantic features in order to 
+This is the key step to learn the vector embedding crosslingually since this step is to add more semantics to the training data. 
+
+Figure 2 is an example of 2 similar implementations in cross languages,one is in \text{C\#}, and the other is in Java.
+
+\begin{description}
+	\item [$\bullet$] \textbf{Removing comments}: We remove all of useless information such as comments out source code, special character, but not all of them. In order to keep as much semantic meanings as we can, we treat the operators as a tokens that also need to learn the embeddings. Usually, the operators will be similar to the special character, to distinguish between them, we adopt Srcml[2] to parse the source code, so we can identify if a token is a language operator or just a special character.
+	\item [$\bullet$] \textbf{Parsing}: We adopt Srcml[2], which is an XML representation for source code, where the markup tags identify elements of the abstract for the language.
+	\item [$\bullet$] \textbf{Adding semantics}: Once we get the XML representation of the source code, we have the information of the element of the codes, we traverse the XML representation to add or replace code elements with predefined keywords to add more semantic meaning to the raw source code. The rules to add or replace code elements with keywords are presented in Table 1
+	\item [$\bullet$] \textbf{Post processing}: camel case tokens and tokens with underscores are split by uppercase letters and the underscore to reduce differences between programming styles.
+\end{description}
+ Let's take the example in the first rule in Table 1 as a motivating example. We have code fragment \textbf{for(int i = 0; i $<$ 10; i++)}, which is a simple for loop with three components, the initialization part, the condition part and the afterthough part. We apply rule 11 into the initialization, which transforms the variable i \textbf{i} into the fixed keyword \textbf{identifier}. Then we apply rule 11 and rule 12 to the condition part, by transforming \textbf{i} into \textbf{identifier} and \textbf{10} to \textbf{literal\_type number}. Finally, we apply rule 13, rule 15 to add the keyword \textbf{operator} before \textbf{++}. In Table 1, we selectively pick out some typical elements of programming languages to demonstrate our data normalizing process, the examples provided in the Table can be written in \text{C\#} or Java. 
+ 
+ Since the variable identifiers are the element with highest number of appearance in the source code, and they are also project specific, means that an identifier can be anything, so that it will add noises into the training phase, we replace all of the identifiers with a fixed keyword. In this paper, we use the keyword \textit{identifer}. For example, with the statement: \textit{int a}, we replace \textit{a} with \textit{identifier} to get \textit{int identifier}. There are also some project-specific elements like: name of methods, name of classes, and types, but we decide to keep all of those elements as it. The first intuition behind this decision is that the appearance frequency of these elements are not as high as the variable identifiers, means that if a class name appear in some context, they tend to appear with approximately the same name in some other similar contexts. The second one is that  the variable is usually used in local scope, while the methods, the classes and types are usually used in global scope, means that they are defined once and are used everywhere in the project, so the developers tend to name them properly than the variable.
+
+
+\begin{table*}
+	\caption{Source code Transformation Rules}
+	\label{tab:freq}
+
+	\begin{tabular}{p{2cm}|l|p{3cm}|p{4cm}|p{4cm}}
+	
+		\hline
+		Element &Sub-Element&Rule&Example code&Applied Rules\\
+		\hline
+		Statements & if statement & add "condition" & if(x$>$5) y+=4 & if expr type int identifier operator $>$ literal\_type number expr\_stmt expr identifier operator += literal\_type number\\\cline{2-5}
+		& for statement & add "condition","control" & for(int i=0;i$<$10;i++)  & for control init type int idenfier operator = number condition expr identifier operator $<$ literal\_type number identifier operator ++\\\cline{2-5}
+	
+		\hline
+		Expressions & function call & add "call" & Console.WriteLine("out)  & expr\_stmt expr call Console Write Line argument literal\_type string\\\cline{2-5}
+		\hline
+		Declarations, Definitions and Initializations & variable declaration statement& add "decl\_stmt" & int i & decl\_stmt decl type int identifier\\\cline{2-5}
+		& array declaration & add "array" & int[] numbers = new int[5]& decl\_stmt decl type int array identifier init operator new type int index literal\_type number \\\cline{2-5}
+		& function declaration & add "function\_decl" & void doWork()& function\_decl void do Work \\\cline{2-5}
+		& function definition & add "function" & void doWork() \{ \}& function void do Work \\\cline{2-5}
+		& anonymous method & add "lambda" & delegate(System.Object o, System.EventArgs \{ \} & function void do Work \\\cline{2-5}
+		\hline
+		Others & inheritance list & add "super" & class Foo: Bar \{ \} & class Foo super Bar\\\cline{2-5}
+		& inheritance list & add "super" & class Foo: Bar \{ \} & class Foo super Bar\\\cline{2-5}
+		& constructor & add "constructor", "parameter\_list" & class Foo \{ Foo(int i)\{\}\} & class Foo constructor Foo parameter\_list parameter decl type int identifier\\\cline{2-5}
+		& destructor & add "destructor", "parameter\_list" & class Foo \{  Foo()\{\}\} & class Foo destructor Foo\\\cline{2-5}
+		\hline
+	\end{tabular}
+\end{table*}
+\subsection{ Unsupervised token alignment}
+
+Once we finish normalizing our training data, we want to learn a shared embedding space between tokens crosslingually rather than just monolingually.
+
+In order to do that, we need to obtain aligned information from such languages. We briefly review the sequence-based token alignment models. Generally, the token alignment model are generative models of the form p(\textbf{t $|$ s}) = $\displaystyle\sum_{a} p(\textbf{a,t $|$ s})$, where $\textbf{s} = (s_{1},..., s_{J})$ is the source sentence, $\textbf{t} = (t_{1},..., s_{J})$ is the target sentence and $\textbf{a} = (a_{1},..., a_{J})$ is the asymmetric alignment which specifies the position of a token in source language aligned to each target language. The model factors in the following way:
+\begin{displaymath}
+p(\textbf{a,t $|$ s}) = \prod_\text{j=1}^J p_{d}(\text{$a_{j}$ $|$ $a_{j\_}$,j}) p_{t}(\text{$t_{j}$ $|$ $s_{a_{j}}$})
+\end{displaymath}
+
+where \text{j\_} is the position of the last non-null-aligned target token before position j. Bekerley aligner (Liang) is a joint training approach, while the source language and target language play a symmetric role in the word alignment task, sequence-based models are asymmetric,they are generative models of the form p(\textbf{t $|$ s})(S $\rightarrow$ T) or p(\textbf{s $|$ t})(T $\rightarrow$ S) by reversing the roles of source and target. This suggests that two models make different types of errors that can be eleminated upon intersection. Figure 2 shows an example alignment of tokens of code fragments between \text{C\#} and Java code.
+
+\begin{figure}[t!]
+	\includegraphics[width=0.45\textwidth]{alignment}
+	\caption{Sample alignment of code fragments between \text{C\#} and Java code, both the fragments have already been processed.}
+	\label{fig:clf}
+\end{figure}
+
+\subsection{The Billingual Skipgram Model}
+The motivation behind the billingual skip gram (BiSkip) model is to learn a shared embedding space between tokens crosslingually rather than just monolingually in the standard skipgram model. Rather than just predicting the tokens in the source language, they use the tokens in the source language to additionally predict their aligned tokens in the target languages. Imagine that if we know that the token \textit{readonly} in \text{C\#} is aligned to and has the same meaning as the token \textit{final} in Java in Figure 3, we can simply substitute \textit{readonly} and use \textit{final} to predict the surrounding tokens such as \textit{int} and \textit{public}. 
+
+Given an alignment link between a token $t_{1}$ in a language $l_{1}$ and a token $t_{2}$ in another language $l_{2}$, the BiSkip model uses the token $t_{1}$ to predict the surrounding tokens of the token $t_{2}$ and vice versa. We can think of this BiSkip model as training four skipgram models jointly which predict tokens betwwen the follow pairs of languages: $l_{1} \rightarrow l_{1}, l_{2} \rightarrow l_{2}, l_{1} \rightarrow l_{2}, l_{2} \rightarrow l_{1}$.
+
+In order to train the BiSkip model, we need the token alignment information. There are two variants of the BiSkip model: (a) BiSkip-UnsupAlign where we don't have the alignment information, thus the alignment information need to be learned unsupervisedly and (b) BiSkip-MonoAlign where we already have the monotonic alignments between words across languages. In our case, we do not have the word alignment information, so we use the BiSkip-UnsupAlign where we can utilize unsupervised align information learned by the Bekerley aligner (Liang et al., 2006), which are presented briefly in Section 3.2.
+
+
+\begin{figure*}[t!]
+	\includegraphics[width=0.55\textwidth]{biskip_align}
+	\caption{Billingual Skipgram Model - besides predicting within languages, the model also predict crosslingually based on the alignment information \text{C\#} and Java}
+	\label{fig:clf}
+\end{figure*}
+
+\section{Experiments}
+\subsection{Data}
+We collect data from 10 open source projects crosslingually. With the intuition that the different implementations of the same project in different languages will contain the same logic, thus files with the same name will contain the same logic, so they are aligned to each other. In natural language processing, such information is called aligned sentences or aligned documents. Here we use another terminology, but with the same concept, we call them "clones". For example, take the \text{C\#} implementation and Java implementation of Lucence, there are 400 cs files in the C\# implementation, and there are 300 java files, there are only 100 pairs of files between implementations that are cloned of each other. We get 4000 pairs of clones over 10 projects and we normalize the all the pairs.
+\subsection{Training}
+We use the following settings: stochastic gradient descent with a default learning rate 0.025, negative sampling with 30 samples, skipgram with context window of size 10, and a subsampling rate of value 1e-4. All models are trained for 10 epochs and the learning rate is decayed to 0 once training is done. In Natural Language, the number of words is usually large and we need a large dimension (range from 100 to 300) to capture the semantic meaning of the word, while the number of tokens in Programming Language is relatively small, so we choose 50 as the dimension size.
+\subsection{Evaluation Tasks}
+We evaluate our architectures on 3 aspects: token similarity, phrase similarity.
+\subsubsection{Component Similarity}
+This task measures the semantic qualitfy of the learned token vectors crosslingually. In software engineering, a program can be constructed from: expression, declaration and statements. We want to evaluate how we can match such components between different languages together.
+\subsubsection{Clone detection}
+To evaluate the impact of our model on real world tasks, we evaluate the diff dataset from (Cheng at al., 2016). The dataset contains of 1000 pairs of diff, one from C\# and the other is from Java, which have been labeled either cloned or non-cloned. 
+
+\subsection{Result}
+\subsubsection{Nearest Neighbor Tokens}
+This task measures the semantic quality of the learned token vectors crosslingually. Our list of words include {if, exception, float}
+\begin{table*}
+	\caption{Nearest neighbor tokens}
+	\label{tab:freq}
+	
+	\begin{tabular}{cccccc}
+		
+		\hline
+		\multicolumn{2}{c}{if(Java)}  & \multicolumn{2}{c}{exception(Java)} & \multicolumn{2}{c}{float(C\#)} \\
+		\hline
+		 C\# & Java & C\# & Java & C\# & Java \\
+		\hline
+		 if & if & throw & exception & float & float \\
+		 break & \&\& & exception & throw & weight & double \\
+		 while &  $||$ & try & throwable & weight & similarity \\
+		 == & continue & catch & catch & double & weight \\
+		 else & while & finally & catch & comparator & score\\
+	
+		\hline
+	\end{tabular}
+\end{table*}
+\subsubsection{Components matching}
+In software engineering, a program can be constructed from: expression, declaration and statements. In this task, we want to evaluate how we can match such components between different languages together.
+
+
+\begin{table*}
+	\caption{Components Matching Result}
+	\label{tab:freq}
+	
+	\begin{tabular}{p{2cm}|l|p{5cm}|p{5cm}|p{1cm}}
+		
+		\hline
+		Element &Sub-Element& Java code &C\# code& Cosine Similarity\\
+		\hline
+		Expression & bit expression & c = a $<<$ 2; & c = a $<<$ 2; & 0.9 \\\cline{2-5}
+		& literal expression & string s = "cat"; & string s = "cat";  & 0.8\\\cline{2-5}
+		& logical expression & a\&\&b; & a\&\&b;  & 0.8\\\cline{2-5}
+		& numeric expression & 45 + 20.2 + 10; & 45 + 20.2 + 10;  & 0.8\\\cline{2-5}
+		& assignment expression & int a = b; & int a = b;  & 0.8\\\cline{2-5}
+		& object creation expression & Object o = new Object (); & Object o = new Object ();  & 0.8\\\cline{2-5}
+		& string expression & "abc" + "cde"; & "abc" + "cde";  & 0.8\\\cline{2-5}
+		& conditional expression & a == b; & a == b;  & 0.8\\\cline{2-5}
+		\hline
+		
+	
+		Declaration & field declaration & public static int i = 10; & public static int i = 10; & 0.9 \\\cline{2-5}
+		& interface declaration & public interface InterfaceName {} & public interface InterfaceName {} & 0.8\\\cline{2-5}
+		& array declaration & int[] numbers = new int[5]; & int[] numbers = new int[5];  & 0.8\\\cline{2-5}
+		& method declaration & void doWork(); & void doWork();  & 0.8\\\cline{2-5}
+		& type declaration & public class TypeName & public class TypeName  & 0.8\\\cline{2-5}
+		& variable declaration & int i; & int i;  & 0.8\\\cline{2-5}
+		& class and constructor declaration & class Foo \{ Foo() \{\}\} & class Foo \{ Foo() \{\}\}  & 0.8\\\cline{2-5}
+		
+		\hline
+		Statement & if statement & if ( i $>$ 0 ) \{ y = x $/$ i;\} & if ( i $>$ 0 ) \{ y = x $/$ i;\} & 0.9 \\\cline{2-5}
+		& for statement & for(int i = 0; i < 10;i++)\{\} & for(int i = 0; i < 10;i++)\{\} & 0.8\\\cline{2-5}
+		& do statement & do \{ number ++;\} while (number $<=$ 20); & do \{ number ++;\} while (number $<=$ 20);  & 0.8\\\cline{2-5}
+		& while statement & while (number $<=$ 20) \{ number++; \} & while (number $<=$ 20) \{ number++; \}  & 0.8\\\cline{2-5}
+		& variable declaration statement & int myInt; & int myInt; & 0.8\\\cline{2-5}
+		& return statement & return i; & return i;  & 0.8\\\cline{2-5}
+		& try statement & try \{\} catch (Exception e)\{\} & try \{\} catch (Exception e)\{\}  & 0.8\\\cline{2-5}
+		& switch statement & switch (c) \{ case 'A': capa++; case 'a': lettera++; default :total++;\} & witch (c) \{ case 'A': capa++; case 'a': lettera++; default :total++;\}  & 0.8\\\cline{2-5}
+	\end{tabular}
+\end{table*}
+
+\subsubsection{Clone Detection}
+For each diff, we perform normalizing step (Section 2.1) to get the normalized one. We do this by averaging token vectors for all tokens in a diff, once we get the vector representation, we compair the similarity between vectors by using the cosine similarity metric. This problem becomes a classification problem since we want to classify if a pair of diff is cloned or not.
+
+The cosine similarity in this case become the feature for our model. We use the Logistic Regression.
+
+\begin{table*}
+	\caption{Clone detection result}
+	\label{tab:freq}
+	
+	\begin{tabular}{c|ccccccc}
+		
+		\hline
+		Projects&Antlr&Cordova &DataSax&Factual&Log4j&	Lucene&	Zeromq\\
+		\hline
+		Precision&	82.30\% &	83.60\%&	83.20\%&	85.23\%&	86.56\%&	88.12\%&	81.15\%\\
+		Recall&	82.30\%&	84.22\%&	83.20\%&	85.23\%&	86.92\%&	88.12\%&	81.15\%\\
+		\hline
+	\end{tabular}
+\end{table*}
+
+\subsection{Discussion}
+As described in (Mikolov at at.; 2013c), the Skipgram model (SG) works well with small amount of the training data, represents well even rare words or phrases, while the Continuos Bag of Words model (CBOW) is several times faster to train than the skip-gram and slightly better accuracy for the frequent words. Since CBOW considers one target word and many context words, the task here is to predicting the word given its context, it needs a bigger dataset to train for target vectors compared to datasets used in SG. In other words, a dataset with short sentences but with high number of samples is suitable for the CBOW model. On the other hand, the Skipgram model (SG) is designed to predict the context, so it needs a dataset with long sentences and low number of samples due to many target words for single context word. In our case, a file (.java or .cs) are usually quite long, compare to a normal sentence in Natural language, then the SG is a more suitable model in this case. 
+Recently, Google Brain releases Neural Machine Translation tutorial for TensorFlow that gives the reader the ability to build a competitive translation model from scratch. As machine translation of human language is largely improved and successful by employing deep neural network, it is a reasonable target to do the same thing for programming language because we've seen that character-level is capable of writing Kinux kernel after learning the entire Linux base source code, as described in [4]. We believe that this can be a good foundation for a neural network-based programming language translation, which is a more sophisticated task. 
+
+\section{Conclusions}
+This work proposes an approach to learn the components mapping between languages. By utilizing the clones of cross language implementation for the same logic, we can learn the alignments unsupervisedly, then we can learn the share embeddings between languages. With not a very large data, we show that we can still map the elements between languages accurately. This can be served as a foundation for more complicated tasks, such as programming language translation. In the future, we want to collect more data in order to train a more accurate embeddings, then we want to adopt the embeddings as a part of a neural network-based program translation.
+
+
+
+\begin{acks}
+  The authors would like to thank Dr. Yuhua Li for providing the
+  matlab code of  the \textit{BEPS} method. 
+
+  The authors would also like to thank the anonymous referees for
+  their valuable comments and helpful suggestions. The work is
+  supported by the \grantsponsor{GS501100001809}{National Natural
+    Science Foundation of
+    China}{http://dx.doi.org/10.13039/501100001809} under Grant
+  No.:~\grantnum{GS501100001809}{61273304}
+  and~\grantnum[http://www.nnsf.cn/youngscientsts]{GS501100001809}{Young
+    Scientsts' Support Program}.
+
+\end{acks}
