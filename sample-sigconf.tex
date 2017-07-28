@@ -39,8 +39,7 @@
 
 
 \author{Nghi Bui}
-\authornote{Dr.~Trovato insisted his name be first.}
-\orcid{1234-5678-9012}
+
 \affiliation{%
   \department{School of Information Systems}
   \institution{Singapore Management University}
@@ -48,7 +47,6 @@
 \email{dqnbui.2016@phdis.smu.edu.sg}
 
 \author{Lingxiao Jiang}
-\authornote{The secretary disavows any knowledge of this author's actions.}
 \affiliation{%
   \department{School of Information Systems}
   \institution{Singapore Management University}
@@ -61,9 +59,7 @@
 
 
 \begin{abstract}
-This paper provides a sample of a \LaTeX\ document which conforms,
-somewhat loosely, to the formatting guidelines for
-ACM SIG Proceedings.\footnote{This is an abstract footnote}
+Word2Vec, aka word embeddings, is a class of neural network models that is being trained from a large corpus of texts, they can produce for each unique word a corresponding vector in a continuous space in which linguistic contexts of words can be observed. In this work, instead of using word2vec for natural languages, which have been studied extensively, we use word2vec for programming languages. The key contribution in this paper is that we apply word2vec to learn a shared embeddings crosslingually by introducing a step to add more semantic information into the training corpus. By leveraging the alignment between different implementations for the same project, we can get a parallel corpus, so called clone-aligned data, then we can learn shared embeddings from such alignments. Our empirical evaluation shows that our model can be used to map components between languages accurately. We also evaluate on a well-known real world task, the clone detection, we achieve a stable precision 84.2\% and recall 83.23\%.
 \end{abstract}
 
 %
