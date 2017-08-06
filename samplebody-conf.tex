@@ -374,7 +374,7 @@ The definition, declaration and statement are more intricate elements, they can 
 			\hline
 			Language& C\# & Java & C\# & Java & C\# & Java  & C\# & Java & C\# & Java & C\# & Java & C\# & Java  & C\# & Java & C\# & Java\\
 			\hline
-			MRR & 0.905 & 0.912  & 0.886 & 0.857 & 0.901 & 0.864 & 0.901 & 0.864& 0.901 & 0.864& 0.901 & 0.864 & 0.901 & 0.864& 0.901 & 0.864 & 0.901 & 0.864 \\	
+			MRR & 0.905 & 0.912  & 0.886 & 0.857 & 0.901 & 0.864 & 0.841 & 0.874& 0.905 & 0.83& 0.78 & 0.833 & 0.924 & 0.854& 0.911 & 0.872 & 0.899 & 0.824 \\	
 			
 	\end{tabular}}
 	\medskip
@@ -485,7 +485,7 @@ With such multiple contexts, even if we use rule 7 in Table 1 to add the keyword
 
 \subsection{Elements matching}
 
-Our goal is to build a model that can find useful mappings between languages. A program is usually constituted of different modules. A module could have a set of related functionalities. A function in a module comprises of smaller elements, such as declaration, expression, and statement. Thus a software program can be visualized as a hierarchical layer architecture of elements. Figure 8 illustrate layer architecture of such elements. We use a simple way to get the vector representation (or embedding) of the expression by averaging all tokens in an element. This approach produces high MRR score since an expression does not contain so many tokens. With more complicated elements like definition, declaration or statetement, such approach may not produce a vey good result since an element is a composition of smaller sub-elements. To get a better representation of such elements, we need to build a model that can aggregate vector representation of the elements in the lower layer to become the vector representation of the element in the higher layer. 
+Our goal is to build a model that can find useful mappings between languages. A program is usually constituted of different modules. A module could have a set of related functionalities. A function in a module comprises of smaller elements, such as declaration, expression, and statement. Thus a software program can be visualized as a hierarchical layer architecture of elements. Figure 8 illustrate layer architecture of such elements. For the expression, we use a simple way to get the vector representation (or embedding) of the expression by averaging all tokens in its sub-elements recursively. This approach produces high MRR score since an expression does not contain so many tokens. With more complicated elements like definition, declaration or statetement, such approach may not produce a vey good result since an element is a composition of smaller sub-elements. To get a better representation of such elements, we need to build a model that can aggregate vector representation of the elements in the lower layer to become the vector representation of the element in the higher layer. 
 
 \begin{figure}[t!]
 	\includegraphics[width=0.45\textwidth]{software_layers}
