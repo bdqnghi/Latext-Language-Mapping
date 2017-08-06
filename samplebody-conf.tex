@@ -204,7 +204,7 @@ where i refers to the rank position of the first relevant document for the i-th 
 \subsubsection{Clone detection}
 To evaluate the impact of our model on real world tasks, we apply our approach into the diff dataset from (Cheng at al., 2016)\cite{cheng2017clcminer} for clone detection. The dataset contains 2000 pairs of diff, one diff is from C\# and the other is from Java, each pair has been labeled either cloned or non-cloned. 
 
-For each diff, we perform normalizing step (Section 3.1) to get the normalized version of the diff, here we call it as "token stream". Then we get the vector representation of the token stream by averaging token vectors for all tokens in the stream, once we get the vector representation, we calculate the similarity between vectors by using the cosine similarity metric. We plot the probability (Figure 5) mass function (PMF) of a distribution of cosine similarity for all pairs of diff. Here we want to find the decision boundary to seperate the 2 groups: cloned and none-cloned.
+For each diff, we perform normalizing step (Section 3.1) to get the normalized version of the diff, here we call it as "token stream". Then we get the vector representation of the token stream by averaging token vectors for all tokens in the stream, once we get the vector representation, we calculate the similarity between vectors by using the cosine similarity metric. We plot the probability (Figure 5) mass function (PMF) of a distribution of cosine similarity for all pairs of diff. Here we want to find the decision boundary to seperate the 2 groups: cloned and none-cloned. 
 
 \subsection{Result}
 \subsubsection{Tokens Matching}
@@ -402,9 +402,12 @@ The definition, declaration and statement are more intricate elements, they can 
 
 
 \subsubsection{Clone Detection}
-In this task, we want to detect if a pair of diff is cloned or not. Figure 6 shows the probability mass function (PMF) of cosine similarity (COSIM) for all pairs of diff. The blue curve indicates the PMF of the cloned pairs, The yellow curve is for the non-cloned pairs. The x-axis is the COSIM value. The y-axis shows the probability distribution of an x-value. The COSIM of the non-cloned pairs ranges from -0.4 to 0.8 and most of them assemble equally from 0.3 to 0.7, while the COSIM of cloned pairs ranges from 0.6 to 1 and most of them assemble equally from 0.8 to 1.
+Figure 6 shows the probability mass function (PMF) of cosine similarity (COSIM) for all pairs of diff. The blue curve indicates the PMF of the cloned pairs, The yellow curve is for the non-cloned pairs. The x-axis is the COSIM value. The y-axis shows the probability distribution of an x-value. The COSIM of the non-cloned pairs ranges from -0.4 to 0.8 and most of them assemble equally from 0.3 to 0.7, while the COSIM of cloned pairs ranges from 0.6 to 1 and most of them assemble equally from 0.8 to 1.
 
 Because of this difference in COSIM distribution between cloned and non-cloned pairs, there exists a decision boundary to separate them, then this task becomes a classification problem. The COSIM is the only feature for this classification model. We use these well-known classifiers: Logistic Regression, Support Vector Machine and Random Forest to evaluate this problem. For per-project's pairs, we use 10-fold validation to evaluate the performance of the classification model.
+
+To prove that the normalizing step provides a better representation of token, we do the same task for the "non-normalizing" version of the data set. In Table 6, there are 2 parts, the first part is the classification result when we apply the normalizing step in to the training data, the second part is for the "non-normalizing" version.
+
 
 \begin{figure}[t!]
 	\includegraphics[width=0.45\textwidth]{clone_distribution}
