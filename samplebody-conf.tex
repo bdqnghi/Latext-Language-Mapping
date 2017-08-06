@@ -1,12 +1,12 @@
 \section{Introduction}
 
-In software engineering, finding a mapping of elements from a language to another is a very common task. Modern programs depend on lots of library APIs, when those APIs change, usually many locations of the client programs need to be changed. Usually, APIs libraries are implemented and maintained in multiple languages. Taking an example with Lucene, a famous search engine project, Lucene provides APIs that allows a third party client to access to its core features, thus there are a lot of Lucene clients that implemented in multiple languages such as Java, C\#, Python, etc. Lucene is originally implemented in Java, as a result, the Java client of Lucene is the version that needs to be evolved and maintained first, then the others come later. Thus the developer usually needs to keep an eye on the Java client while implementing another client, such as C\#, in order to synchronize the code of the clients. Because of such reason, there is a need for an approach to find a mapping between different languages, not only for the code structure but also for the semantics of the code.
+In software engineering, finding a mapping of elements from a language to another is a very common task. Modern programs depend on lots of library APIs, when those APIs change, usually many locations of the client programs need to be changed. Usually, APIs libraries are implemented and maintained in multiple languages. Taking an example with Lucene, a popular search engine, Lucene provides APIs that allows a third party client to access to its core features, thus there are a lot of Lucene clients that implemented in multiple languages such as Java, C\#, Python, etc. Lucene is originally implemented in Java, as a result, the Java client of Lucene is the version that needs to be evolved and maintained first, then the others come later. Thus the developer usually needs to keep an eye on the Java client while implementing another client, such as C\#, in order to synchronize the code of the clients. Because of such reason, there is a need for an approach to find a mapping between different languages, not only for the code structure but also for the semantics of the code.
 
 Distributed word representations can be learned from the distributional patterns in corpora. In the past, such representations can be constructed by counting co-occurrences, so that the features in one word's representation corresponded to other words. Word2vec (Mikolov et al., 2013) \cite{mikolov2013distributed}, which is a neural-based language model, is an alternative method for learning vector representation of words, aka \textbf{embedding}. It uses language data to capture latent semantic features with respect to language modeling objective. The objective can be either to predict the context given a word or predict a word given a context. The representation learned by neural network models perform effectively in tackling various NLP tasks such as sentiment analysis, sentence parsing and neural machine translation (NMT).
 
 Recently, NMT models have emerged as an alternative to statistical, phrase-based translation models, and achieved impressive translation performance. The objective of NMT is to generate an appropriate sentence in a target language T given a sentence in the source language S. The NMT system first aggregates the embedding of each word in the sentence through an encoder to build a "thought" vector, which is a sequence of number to represent the sentence meaning. and a decoder, then, processes the sentence vector to produce a translation. It raises a question: "\textbf{\textit{Can we build a NMT model for programming languages?}}". We have seen that at character-level, the neural network model is capable of writing Linux kernel after learning the entire Linux-based source code, as described in \cite{Karpathy}. Thus the neural-based technique to generate source code is an achievable target.
 
-Inspired by both of these, in this paper, we aim to find useful mappings between languages by learning a shared token embeddings. To the best of our knowledge, we are the first to use a \textbf{neural-based \textit{programming language model}} to learn a \textbf{\textit{share embeddings cross-lingually}}. By learning a \textbf{billingual shared embedding space}, mapping similar elements between languages is achievable, thus this can be served as a foundation of NMT for programming languages. In our evaluations, we demonstrate the empirical strength of our model to represent a code fragment effectively for code clone detection task. We also show that by adding semantic keywords into the source code in the normalizing step, we can map the components of two languages accurately. 
+Inspired by both of these, in this paper, we aim to find useful mappings between languages by learning a shared token embeddings. To the best of our knowledge, we are the first to use a \textbf{neural-based \textit{programming language model}} to learn a \textbf{\textit{share embeddings cross-lingually}}. By learning a \textbf{cross-lingual shared embedding space}, mapping similar elements between languages is achievable, thus this can be served as a foundation of NMT for programming languages. In our evaluations, we demonstrate the empirical strength of our model to represent a code fragment effectively for code clone detection task. We also show that by adding semantic keywords into the source code in the normalizing step, we can map the components of two languages accurately. 
 
 \section{Background}
 
@@ -303,7 +303,7 @@ This expression is a composition of two sub-expressions. We calculate the averag
 			object creation expression & \texttt{o = new Object ()}\\
 			
 	\end{tabular}}
-	\caption{Expression types}	
+	\caption{Expression types with code example}	
 \end{table}
 
 
@@ -311,55 +311,43 @@ The definition, declaration and statement are more intricate elements, they can 
 
 
 \begin{table*}
-	
 	\label{tab:freq}
-	\resizebox{\textwidth}{!}{
-	\begin{tabular}{p{2cm}|l|p{5cm}|p{5cm}c}
+	
+	\begin{tabular}{p{2cm}|l|p{5cm}}
 		
 		\hline
-		Element &Sub-Element& Java code &C\# code& \\
+		Element &Sub-Element& Code Sample\\
 		\hline
-		Definition & method definition & \texttt{int code = numEntries << 1;} & \texttt{int SIZE = 1 << 11;}  \\\cline{2-5}
+		Definition & method definition & \texttt{int getArea() \{
+				return width * height;
+		\}}\\\cline{2-3}
 		
-		& class definition & String grammarStr = "parser grammar p"; & string s = "parser";  \\\cline{2-5}
+		& class definition & \texttt{class Pair \{\}}\\\cline{2-3}
 		
-		& enum definition & a\&\&b; & a\&\&b;  \\\cline{2-5}
+		& enum definition & \texttt{enum Planet \{ MERCURY, VENUS, EARTH, MARS, JUPITER, SATURN, URANUS, NEPTUNE; \}}   \\\cline{2-3}
 		
+		& ........ &  \\\cline{2-3}
 		\hline
 		
 		
-		Declaration & field declaration & public static int i = 10; & public static int i = 10;  \\\cline{2-5}
+		Declaration & field declaration & \texttt{public static int i = 10;} \\\cline{2-3}
 		
-		& interface declaration & public interface CardCredit {} & public interface CardCredit {} \\\cline{2-5}
+	
+		& array declaration & \texttt{int[] numbers = new int[5];} \\\cline{2-3}
 		
-		& array declaration & int[] numbers = new int[5]; & int[] numbers = new int[5];  \\\cline{2-5}
+		& method declaration & \texttt{void doWork();} \\\cline{2-3}
 		
-		& method declaration & void doWork(); & void doWork(); \\\cline{2-5}
 		
-		& type declaration & public class Inference & public class Inference   \\\cline{2-5}
-		
-		& variable declaration & int i; & int i;  \\\cline{2-5}
-		
-		& class and constructor declaration & class Foo \{ Foo() \{\}\} & class Foo \{ Foo() \{\}\}  \\\cline{2-5}
-		
+			& ........ &  \\\cline{2-3}
 		\hline
-		Statement & if statement & if ( i $>$ 0 ) \{ y = x $/$ i;\} & if ( i $>$ 0 ) \{ y = x $/$ i;\} \\\cline{2-5}
+		Statement & if statement & \texttt{if ( i $>$ 0 ) \{ y = x $/$ i;\}}\\\cline{2-3}
 		
-		& for statement & \texttt{for(int i = 0; i < 10;i++)\{\}} & for(int i = 0; i < 10;i++)\{\}\\\cline{2-5}
-		
-		& do statement & do \{ number ++;\} while (number $<=$ 20); & do \{ number ++;\} while (number $<=$ 20);  \\\cline{2-5}
-		
-		& while statement & \texttt{while (number $<=$ 20) \{ number++; \}} & \texttt{while (number $<=$ 20) \{ number++; \}}  \\\cline{2-5}
-		
-		& variable declaration statement & \texttt{int myInt;} & \texttt{int myInt;} \\\cline{2-5}
-		
-		& return statement & return i; & return i;  \\\cline{2-5}
-		& try statement & \texttt{try \{\} catch (Exception e)\{\}} & \texttt{try \{\} catch (Exception e)\{\}}  \\\cline{2-5}
-		
-		& switch statement & \texttt{switch (c) \{ case 'A': capa++; case 'a': lettera++; default :total++;\}} & \texttt{switch (c) \{ case 'A': capa++; case 'a': lettera++; default :total++;\}} \\\cline{1-5}
-	\end{tabular}}
+		& for statement & \texttt{for(int i = 0; i < 10;i++)\{\}}\\\cline{2-3}
+		& ........ & \\\cline{1-3}
+
+	\end{tabular}
 	\medskip
-	\caption{Elements Matching Sample}
+	\caption{Elements Type Example - shown are 3 types: Definition, Declaration and Statement with code example. The code can be either in C\# or Java}
 \end{table*}
 
 
@@ -481,7 +469,7 @@ Here we want to discuss some cases that not produce good AP score in the token m
 
 \end{description}
 
-With such multiple contexts, even if we use rule 7 in Table 1 to add the keyword "\textbf{super}" in the normalizing step, it is still difficult to distingush between different contexts because there are so many potential contexts that the token "\texttt{:}" may appear. A solution for this problem is to define the mapping between similar tokens as the initial alignments for the BiSkip model. With that, this become a semi-supervised problem, where we already have partial alignments initially. We leave this as a part of our futures works.
+With such multiple contexts, it is very difficult to distingush between different them because there are so many potential contexts that the token "\texttt{:}" may appear. There are quite some noises in the 10-nearest neighbor result, they are some developer-defined token with semantic keyword added in our training phase (eg, constructor) and the language keywords (\texttt{extends} and \texttt{implements}), which supposed to belong to top 2 in results. A solution for this problem is to define the mapping between similar tokens as the initial alignments for the BiSkip model. With that, this become a semi-supervised problem, where we already have partial alignments initially. We leave this as a part of our futures works.
 
 \subsection{Elements matching}
 
@@ -497,7 +485,7 @@ Our goal is to build a model that can find useful mappings between languages. A 
 Recently, a Neural Machine Translation tutorial \cite{Thang} for TensorFlow is released, which gives the reader the ability to build a competitive translation model from scratch. As machine translation of human language is largely improved and successful by employing deep neural network, it is a reasonable target to do the same thing for programming language because we've seen that character-level is capable of writing Linux kernel after learning the entire Linux base source code, as described in \cite{Karpathy}. We believe that our work can be a good foundation for a neural network-based programming language translation, which is a more sophisticated task. 
 
 \section{Conclusion}
-This work proposes an approach to learn the mapping between languages. By utilizing the alignment of file across languages, we can learn the alignment of tokens in an unsupervised manner, then we can learn the share embeddings between languages. The shared embeddings are able to bring the benefits to learn the semantic cross-lingually. We show that we can map the elements between languages accurately. This can be served as a foundation for more complicated tasks, such as programming language translation. In the future, we want to collect more data in different languages to learn multiple shared embddings, then we want to adopt the embeddings as a part of a neural network-based program translation for multiple languages. 
+This work proposes an approach to learn the mapping between languages. By utilizing the alignment of file across languages, we can learn the alignment of tokens in an unsupervised manner, then we can learn the share embeddings between languages. The shared embeddings are able to bring the benefits to learn the semantic cross-lingually. We show that we can map most of the the elements between languages accurately under a fine-grained manner. This can be served as a foundation for more complicated tasks, such as programming language translation. In the future, we want to collect more data in different languages to learn multiple shared embddings, then we want to adopt the embeddings as a part of a neural network-based program translation for multiple languages. 
 
 
 
