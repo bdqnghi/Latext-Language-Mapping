@@ -1,12 +1,10 @@
 \section{Introduction}
 
-In software engineering, the task to translate from a language to another is very common. Modern programs depend on lots of library APIs, when those APIs change, usually many locations of the client programs need to be changed. Usually, APIs libraries are implemented and maintained in multiple languages. Taking an example with Lucene, a popular search engine, Lucene provides APIs that allows a third party client to access to its core features, thus there are a lot of Lucene clients that implemented in multiple languages such as Java, C\#, Python, etc. Lucene is originally implemented in Java, as a result, the Java client of Lucene is the version that needs to be evolved and maintained first, then the others come later. Thus the developer usually needs to keep an eye on the Java client while implementing another client, such as C\#, in order to synchronize the code of the clients. Because of such reason, there is a need for an approach to find translations between different languages, not only for the code structure but also for the semantics of the code.
+Modern programs depend on lots of library APIs, when those APIs change, usually many locations of the client programs need to be changed. Usually, APIs libraries are implemented and maintained in multiple languages. Taking an example with Lucene, a popular search engine, Lucene provides APIs that allows a third party client to access to its core features, thus there are a lot of Lucene clients that implemented in multiple languages such as Java, C\#, Python, etc. Lucene is originally implemented in Java, as a result, the Java client of Lucene is the version that needs to be evolved and maintained first, then the others come later. Thus the developer usually needs to keep an eye on the Java client while implementing another client, such as C\#, in order to synchronize the code of the clients. Because of such reason, there is a need for an approach to find translations between different languages, not only for the code structure but also for the semantics of the code.
 
-Up to now, most of the focus has been spent on monolingual problems despite the existence of a wide variety of multilingual tasks. Recently, in the field of Natural Language Processing (NLP), the Neural Machine Translation (NMT) models have emerged as an alternative to statistical, phrase-based translation models, and achieved impressive translation performance. It raises a question: "\textbf{\textit{Can we build a Neural Machine Translation model for programming languages?}}"
+Up to now, most of the focus has been spent on monolingual problems despite the existence of a wide variety of multilingual tasks. Recently, in the field of Natural Language Processing (NLP), the Neural Machine Translation (NMT) models have emerged as an alternative to statistical, phrase-based translation models, and achieved impressive translation performance. It raises a question: "\textbf{\textit{Can we build a Neural Machine Translation model for programming languages?}}". These NMT models used distributed vector representation of word as the basic unit to represent the more complex semantic composition element, such as sentence. Distributed vector representation has been successfully used to model natural languages and applied to problems such as neural machine translation, speech recognition, optical character recognition and others. One prominent distributed vector representation approach achieves significant attention is Word2Vec (Mikolov et al., 2013) \cite{mikolov2013distributed}, aka word embeddings. Word2vec, which is a neural-based language model, it is used for learning low dimensional vector representation of words, aka \textbf{embedding}. It uses language data to capture latent semantic features with respect to language modeling objective. The objective can be either to predict the context given a word or predict a word given a context
 
-\textbf{\textit{Our approach}}: Distributed vector representation has been successfully used to model natural languages and applied to problems such as neural machine translation, speech recognition, optical character recognition and others. One prominent distributed vector representation approach achieves significant attention is Word2Vec (Mikolov et al., 2013) \cite{mikolov2013distributed}, aka word embeddings. Word2vec, which is a neural-based language model, it is used for learning low dimensional vector representation of words, aka \textbf{embedding}. It uses language data to capture latent semantic features with respect to language modeling objective. The objective can be either to predict the context given a word or predict a word given a context
-
-Our main goal is to produce good vector representation for tokens \textbf{across programming languages} by reducing this problem into a neural-based \textit{natural language processing} problem. Even though it has been observed that software has naturalness \cite{hindle2012naturalness} and statistical language models have been adapted to many software engineering tasks, such as code suggestions, code search, learning natural code convention, etc, it is not plausible to bring exactly the Word2Vec model for a cross-lingual programming language.  The main idea is to add a normalization step to in order to make the programming language to become natural-like, then we can find useful mappings between languages by learning a shared token embedding from the normalization data.
+\textbf{\textit{Our approach}}: Our main goal is to produce good vector representation for tokens \textbf{\textit{across programming languages}} by reducing this problem into a neural-based \textit{natural language processing} problem. Even though it has been observed that software has naturalness \cite{hindle2012naturalness} and statistical language models have been adapted to many software engineering tasks, such as code suggestions, code search, learning natural code convention, etc, it is not plausible to bring exactly the Word2Vec model for a cross-lingual programming language.  The main idea is to add a normalization step to in order to make the programming language to become natural-like, then we can find useful mappings between languages by learning a shared token embedding from the normalization data.
 
 \textbf{\textit{Our contribution}}: The main contributions of this paper are:
 \begin{description}
@@ -14,37 +12,18 @@ Our main goal is to produce good vector representation for tokens \textbf{across
 	\item [$\bullet$] We conduct large-scale evaluations on a different granularity of programming language to demonstrate the potential ability to use the neural-based technique for program translation through the program's elements mapping task.
 	\item [$\bullet$] We prove that our work can be a benefit to real world task by evaluating our technique on a clone detection task. The data set is taken from on the diff data set from CLCMiner \cite{cheng2017clcminer} and we achieve a high precision and recall score. For the 10 projects in this dataset, the average precision is 85\% and the recall is 87\%.
 \end{description}
-\section{Background}
 
-\subsection{Related work}
+\section{Related work}
 The Neural Machine Translation (NMT) models have emerged as an alternative to statistical, phrase-based translation models, and achieved impressive translation performance. The objective of NMT is to generate an appropriate sentence in a target language T given a sentence in the source language S. The NMT system first aggregates the vector representation of each word in the sentence through an encoder to build a "thought" vector, which is a sequence of number to represent the sentence meaning. and a decoder, then, processes the sentence vector to produce a translation. Here we can see that the foundation of such NMT models is the distributed vector representation of words, aka word embeddings.
 
 The work of Hindle et al. \cite{hindle2012naturalness} yields a vision which suggests that techniques from natural language processing are useful in various programming tasks such as name suggestion, code completion, code search, etc. Miltiadis et al. \cite{allamanis2015suggesting} apply a neural-based model to the method naming problem. Raychev et al.\cite{raychev2015predicting} present a discriminative probabilistic model to predict types and names of variables in Javascript. Unfortunately, none of them have considered the language model for cross languages in software engineering.
 
-\subsection{Background on Word2Vec}
 
-Word2vec is a group of related models that are used to produce word embeddings. These models are shallow, two-layer neural networks that are trained to reconstruct linguistic contexts of words. Word2vec takes as its input a large corpus of text and produces a vector space, typically of several hundred dimensions, with each unique word in the corpus being assigned a corresponding vector in the space. Word vectors are positioned in the vector space such that words that share common contexts in the corpus are located in close proximity to one another in the space. Mikolov et al.\cite{mikolov2013distributed} introduce two variances of Word2Vec, which are Continuous Bag-of-Words (CBOW) and skip-gram. We show the skip-gram model in Figure 1 as we use it in our work.
+\section{Background}
+\subsection{Word2Vec}
 
-\subsubsection{The skip-gram model}
-The training objective of the skip-gram model is to find word representations that are useful for predicting the surrounding words in a sentence or a document. In other words, The skip-gram model aims to predict the word given the contexts. More formally, given a sequence of training words \begin{math}w_{1}, w_{2}, w_{3}, . . . , w_{T}\end{math}, the objective of the skip-gram model is to maximize the average log-probability:
-
-
-\begin{displaymath}
-J(\theta) = \frac{1}{T} \sum_{t=1}^T \sum_{-c\leq j\leq c,j\neq0} log(p(w_{t+j}|w_{t})
-\end{displaymath}
-where c is the size of the context window (which can be a function of the center word \begin{math}w_{t}\end{math}).
-
+Word2vec is a group of related models that are used to produce word embeddings. These models are shallow, two-layer neural networks that are trained to reconstruct linguistic contexts of words. Word2vec takes as its input a large corpus of text and produces a vector space, typically of several hundred dimensions, with each unique word in the corpus being assigned a corresponding vector in the space. Word vectors are positioned in the vector space such that words that share common contexts in the corpus are located in close proximity to one another in the space. Mikolov et al.\cite{mikolov2013distributed} introduce two variances of Word2Vec, which are Continuous Bag-of-Words (CBOW) and skip-gram. 
 As described in (Mikolov at at.; 2013)\cite{mikolov2013distributed}, the skip-gram model works well with small amount of the training data, represents well even rare words or phrases, while the Continuos Bag of Words model (CBOW) is several times faster to train than the skip-gram and slightly better accuracy for the frequent words. Since CBOW considers one target word and many context words, the task here is to predict the word given its context, it needs a bigger dataset to train for target vectors compared to datasets used in skip-gram. In other words, a dataset with short sentences but with a high number of samples is suitable for the CBOW model. On the other hand, the skip-gram model is designed to predict the context, so it needs a dataset with long sentences and a low number of samples due to many target words for single context word. In our case, a file (.java or .cs) are usually quite long, compare to a normal sentence in the Natural language, then the skip-gram is a more suitable model in this case. 
-
-
-\subsubsection{ Parameters of the skip-gram model}
-Here we want to give a brief explanation about the parameters that are being used for training with our data set.
-
-\textbf{Negative sampling}: Training a neural network means taking a training example and adjusting all of the neuron weights slightly so that it predicts that training sample more accurately. In other words, each training sample will tweak all of the weights in the neural network. The size of the vocabulary means that our skip-gram neural network has a tremendous number of weights, all of which would be updated slightly by every one of our large number of training samples. Instead of taking the probability of the context word compared to all of the possible context words in the vocabulary, this method randomly samples 2-20 possible context words and evaluates the probability only from these. In other words, negative sampling addresses this by having each training sample only modify a small percentage of the weights, rather than all of them.
-
-\textbf{Subsampling rate}: In a nutshell, subsampling is a method of diluting very frequent words, akin to removing stop-words. The subsampling method presented in (Mikolov et al., 2013) \cite{mikolov2013distributed} randomly removes words that are more frequent than some threshold \textit{t} with a probability of \textit{p}.
-
-\textbf{Window size}: The window size is randomly chosen between 1 and max size for each training sample, resulting in words with the maximum distance being observed with a probability of 1/c while words directly next to the given word are always observed. For example, if the window is set to 5 then for the current word w surrounding 10 words will be taken as context words.
 
 
 
@@ -58,12 +37,24 @@ Here we want to give a brief explanation about the parameters that are being use
 \subsection{Billingual embedding models}
 The bilingual embedding models capture not only semantic information of monolingual works but also semantic relationships across different languages. Here we want to describe briefly the bilingual modes in the field of Natural Language Processing, thus the differences between them affect the choice in our framework. We can categorize approaches to learn bilingual word representation in 3 different schemes: bilingual mapping, monolingual adaptation, and bilingual training.
 \begin{description}
-	\item [$\bullet$] \textbf{Billingual Mapping}: First, word representations are obtained on each language independently, either by CBOW or skip-gram model. This method assumes that alignment information at word-level between languages are available, e.g: the(English) - le(French), dog(English) - chien(French). As described in \cite{mikolov2013exploiting}, the vector representations of similar words in different languages are related by a linear transformation, as they have similar geometric arrangements. Given the word representations for two language \begin{math}l_{1}\end{math} and \begin{math}l_{2}\end{math} that are learned independently and the alignment information are available, the goal of this method is to learn a transformation matrix \textit{W} such that \begin{math}W l_{1}\end{math} approximates \begin{math}l_{2}\end{math}.
+	\item [$\bullet$] \textbf{Billingual Mapping}: First, word representations are obtained on each language independently, either by CBOW or skip-gram model. This method assumes that alignment information at word-level between languages are available. As described in \cite{mikolov2013exploiting}, the vector representations of similar words in different languages are related by a linear transformation, as they have similar geometric arrangements. Given the word representations for two language \begin{math}l_{1}\end{math} and \begin{math}l_{2}\end{math} that are learned independently and the alignment information are available, the goal of this method is to learn a transformation matrix \textit{W} such that \begin{math}W l_{1}\end{math} approximates \begin{math}l_{2}\end{math}.
 	\item [$\bullet$] \textbf{Monolingual Adaptation}: this scheme, on the other hand, only need the vector representations for the source language and the alignment information at word-level. The goal is to bootstrap learning of target representations and make sure the target representations of semantically similar words across languages are close together. Zou et al. (2013) consider the unsupervised alignment information derived from a parallel corpus.
 	\item [$\bullet$] \textbf{Billingual Training}: the previous schemes assume fixed pretrained representations on either one or both sides. This scheme attempts to jointly learn representations from scratch. The Bilingual skip-gram model (BiSkip), proposed by (Thang et al., 2015) \cite{luong2015bilingual}, utilizes only the alignment information between languages to learn good vector representations for both languages. This work has carefully examined the quality of the learning bilingual embeddings, while the others have not.
 \end{description}
 Our goal in this paper is to learn a good vector representations for cross programming languages, we also want to keep a good vector representation for each language separately. The BiSkip model is proved to perform outstanding both in bilingual tasks and monolingual tasks \cite{luong2015bilingual}, compares to the others.
 
+\subsection{ Unsupervised word alignment}
+
+In natural language machine translation, word alignment is an important component of a complete statistical machine translation pipeline. The word alignment task is the task to identify translation relationships among the words across languages, e.g: the(English) - le(French), dog(English) - chien(French) are aligned words. Collecting all the information of aligned words for a pair of languages takes a lot of manual effort because there are too many potential pair of word that can be aligned to each other. 
+
+This problem is more severe for the programming languages. The vocabulary size of a programming language is small due to a few number of keywords. In our case, we want to consider all the tokens the can be appear in a programming language corpora, thus the vocabulary we are considering is the keywords itself and the human-defined identifier, thus the size of vocabulary can be infinite because the identifier can be any textual characters. Because of such reason, there are existed approach to learn the alignments in a unsupervised manner. Back to the task to find word alignment across natural language. The task is to find word-level translation correspondences in parallel text. Formally, given a source sentence \textbf{e} consisting of words \begin{math} e_{1}, e_{2}, ...,e_{l}\end{math} and a target sentence \textbf{f} consisting of words \begin{math} f_{1}, f_{2}, ...,f_{m}\end{math}, we want to infer an alignment \textbf{a}, which is a sequence of indcies \begin{math} a_{1}, a_{2}, ...,a_{m}\end{math} which indicated for each target word \begin{math} f_{1}\end{math}, the corresponding source word \begin{math}e{a_{i}}\end{math} or a null word. In our case, a sentence is a \textit{token stream} of tokens in a \textit{programming language}. One of most prominent approach for this unsupervised token alignment task is the Berkeley aligner (Liang et al. \cite{liang2006alignment}), which is a joint training approach to find such alignments. Figure \ref{fig:unsupervised_token_alignment} shows an example alignment  of token streams between \text{C\#} and Java as an output of the Berkeley aligner. The pair of token that has the dash line connect to each other are aligned tokens.
+
+\begin{figure}[t!]
+	
+	\includegraphics[width=0.48\textwidth]{alignment}
+	\caption{Sample alignment of code fragments between \text{C\#} and Java code, both the fragments have already been normialized.}
+	\label{fig:unsupervised_token_alignment}
+\end{figure}
 \section{Our Approach}
 \subsection{Overview}
 
@@ -74,27 +65,14 @@ Our goal in this paper is to learn a good vector representations for cross progr
 \end{figure*}
 
 
-
-Figure \ref{fig:approach} is the overview of our approach. There are 4 steps:
-\begin{description}
-	\item [$\bullet$] \textbf{Files alignment}:In order to train the BiSkip model, we need the parallel corpus of languages. We collect data from open-source projects cross-lingually and get the aligned files. The process to get the aligned files are shown in section 4.1.
-	\item [$\bullet$]\textbf{Data Normalizing}: This is the key step to get a better shared embedding by adding more semantic meanings to the training data. This step is comprised of 3 steps: preprocessing, adding semantic information and postprocessing the data.
-	\item [$\bullet$] \textbf{Token Alignment}: Before learning the shared embeddings cross-lingually, we need to get the token alignment information. In our case, we do not have the monotonic token alignments. In addition, not like the natural language, the tokens in a programming language can be anything, except some language keywords, e.g: \texttt{if, for, while, public}, etc. So we utilized existing unsupervised token alignment techniques proposed by Liang \cite{liang2006alignment}.
-	\item [$\bullet$] \textbf{BiSkip Training}: Once we get the token alignments information, we use it to learn shared embedding for all tokens in both languages. The vector representations after learned are used to describe the semantic meaning of tokens among the others.
-	
-	
-\end{description}
-
-
-
+Figure \ref{fig:approach} is the overview of our approach. The first step is to collect the parallel corpus across languages.  A parallel corpus is a corpus that contains a collection of original texts in language \begin{math}L1\end{math} and their translation into language \begin{math}L2\end{math}. In our case, the parallel corpus is the collection of language files that contain the same logical implementation. Taking Lucene as an example, the file \texttt{AbstractEncoder.cs} under C\# Lucence Client project has the same name \texttt{AbstractEncoder} with the file \texttt{AbstractEncoder.java} under Java Lucene Client project, so they are a part of the parallel corpus, and they are aligned to each other. Once we have the parallel corpus, we need to normalize them into a normalized version. Basically, the normalization step is to add more semantic keywords into the source code, these keywords help us to learn better vector representation for tokens. The normalized parallel corpus then is served as the input the Bekerley aligner \cite{liang2006alignment} to get the token alignment information. The token alignment is used to learn a share embedding across languages.
 
 \subsection{Data Normalization}
 \label{sub:normalization}
 In natural language processing, the data normalization step is a process to remove uninteresting contents from the data set and transform the rest into normalized comparison units. In our case, we are performing on the similar task for programming languages. The differences between the programming language and natural language can be described as:
 \begin{description}
 	\item [$\bullet$] Programming languages are formally defined, there is a mathematical definition of their semantics.
-	\item [$\bullet$] Vocabulary of programming languages is very limited and restricted to a few number of words in a very specific domain. The vocabulary, in this case, is language keywords, eg. if, else, for, while, etc.
-	\item [$\bullet$] Programming languages are perfectly unambiguous and have bounded and precisely defined vagueness.
+	\item [$\bullet$] Vocabulary of programming languages is very limited and restricted to a few number of words in a very specific domain. The vocabulary, in this case, is language keywords, eg. \textit{if, else, for, while}, etc.
 \end{description}
 Because of such differences, usual techniques to process natural language may not provide enough usefulness for programming language processing task.
 Besides removing uninteresting contents, we add more semantic features into training corpus with the intuition that these features are able to remove the syntactic gap between languages. This is the key step to learn the embedding cross-lingually. This process involves 3 sub-processes:
@@ -102,7 +80,7 @@ Besides removing uninteresting contents, we add more semantic features into trai
 \begin{description}
 	\item [$\bullet$] \textbf{Pre-processing}: We remove all of the useless information such as comments, special character, but not all of them. In order to keep as many semantic meanings as we can, we treat the operators as tokens that also need to learn the embeddings. Usually, the operators will be similar to the special character, to distinguish between them, we adopt srcML \cite{collard2011lightweight} to parse the source code, so we can identify if a token is a language operator or just a special character
 	\item [$\bullet$] \textbf{Adding semantic information}: Once we get the XML representation of the source code, we have the information of each element from the codes, we traverse the XML representation to add or replace code elements with predefined keywords to add more semantic meaning to the raw source code. We selectively present some of the rules to add or replace code elements with keywords in Table 1.
-	\item [$\bullet$] \textbf{Post-processing}: Once we get the enhanced semantic version of the code, the camel case tokens and tokens with underscores are split by upper case letters and the underscore to reduce differences between programming styles.
+	\item [$\bullet$] \textbf{Token splitting}: Once we get the enhanced semantic version of the code, the camel case tokens and tokens with underscores are split by upper case letters and the underscore to reduce differences between programming styles.
 \end{description}
 
 \begin{figure}[t!]
@@ -112,7 +90,7 @@ Besides removing uninteresting contents, we add more semantic features into trai
 	\label{fig:srcml_sample}
 \end{figure}
 
-In Table 1, we selectively pick out some typical elements of programming languages to demonstrate our data normalizing process, the examples provided in the Table can be written either in \text{C\#} or Java. Taking an example, we have the code fragment: 
+In Table \ref{tab:transform_rules}, we selectively pick out some typical elements of programming languages to demonstrate our data normalizing process, the examples provided in the Table can be written either in \text{C\#} or Java. Taking an example, we have the code fragment: 
 
 \begin{lstlisting}
 for(int i = 0; i < 10; i++)
@@ -122,7 +100,7 @@ which is a simple for loop with three elements, the initialization part, the con
 
 \begin{table*}
 	
-	\label{tab:freq}
+	
 	\resizebox{\textwidth}{!}{
 		\begin{tabular}{p{2cm}|p{0.79cm}|p{2cm}|p{3cm}|p{4cm}|p{4cm}}
 			
@@ -161,14 +139,14 @@ which is a simple for loop with three elements, the initialization part, the con
 	\end{tabular}}
 	\medskip
 	\caption{Source code Transformation Rules - For each type of elements, we define subtypes of it and we manually define rules to add more semantic keywords to the code. The code after adding the sematic keywords become a natural-like sentence.}
+	\label{tab:transform_rules}
 \end{table*}
 
 
 \begin{figure}[t!]
-	
-	\includegraphics[width=0.48\textwidth]{alignment}
-	\caption{Sample alignment of code fragments between \text{C\#} and Java code, both the fragments have already been normialized.}
-	\label{fig:alignment}
+	\includegraphics[width=0.35\textwidth]{biskip_align}
+	\caption{Billingual Skipgram Model - besides predicting within languages, the model also predict crosslingually based on the alignment information. From the output of the unsupervised token alignment, the token \textit{readonly(C\#)} and \textit{final(Java)} are aligned, then use the \textit{readonly} to predict the surrounding contexts of itself and target language, and vice versa for the token \textit{final}.}
+	\label{fig:biskip_align}
 \end{figure}
 
 \subsection{The Bilingual skip-gram Model}
@@ -177,21 +155,15 @@ Our final goal is to build a shared embedding vector space cross-lingually. We u
 
 Given an alignment link between a token $t_{1}$ in a language $l_{1}$ and a token $t_{2}$ in another language $l_{2}$, the BiSkip model uses the token $t_{1}$ to predict the surrounding tokens of the token $t_{2}$ and vice versa. We can think of this BiSkip model as training four skip-gram models jointly which predict tokens betwwen the follow pairs of languages: $l_{1} \rightarrow l_{1}, l_{2} \rightarrow l_{2}, l_{1} \rightarrow l_{2}, l_{2} \rightarrow l_{1}$.
 
-\subsubsection{ Unsupervised token alignment}
 
-Once we finish normalizing our training data, we want to learn a shared embedding space between tokens cross-lingually rather than just monolingually. In order to do that, we need to obtain aligned information from such languages. We do not have the alignment information, thus the alignment information must be obtained to the unsupervised manner. We briefly review the sequence-based unsupervised token alignment models. Generally, the token alignment model are generative models of the form p(\textbf{t $|$ s}) = $\displaystyle\sum_{a} p(\textbf{a,t $|$ s})$, where $\textbf{s} = (s_{1},..., s_{J})$ is the source sentence, $\textbf{t} = (t_{1},..., s_{J})$ is the target sentence and $\textbf{a} = (a_{1},..., a_{J})$ is the asymmetric alignment which specifies the position of a token in source language aligned to each target language. Berkeley aligner (Liang et al. \cite{liang2006alignment}) is a joint training approach, while the source language and target language play a symmetric role in the word alignment task, sequence-based models are asymmetric,they are generative models of the form p(\textbf{t $|$ s})(S $\rightarrow$ T) or p(\textbf{s $|$ t})(T $\rightarrow$ S) by reversing the roles of source and target. This suggests that two models make different types of errors that can be eliminated upon intersection. Figure 4 shows an example alignment of tokens of code fragments between \text{C\#} and Java code as an output of the Berkeley aligner.
 
-\begin{figure}[t!]
-	\includegraphics[width=0.35\textwidth]{biskip_align}
-	\caption{Billingual Skipgram Model - besides predicting within languages, the model also predict crosslingually based on the alignment information. From the output of the unsupervised token alignment, the token \textit{readonly(C\#)} and \textit{final(Java)} are aligned, then use the \textit{readonly} to predict the surrounding contexts of itself and target language, and vice versa for the token \textit{final}.}
-	\label{fig:clf}
-\end{figure}
 
 \section{Experiments}
 
 
 \subsection{Data}
-We collect data from 10 open source projects cross-lingually in C\# and Java. With the intuition that the different implementations of the same project in different languages contain the same logical information, thus files with the same indicator also contain the same logical information, so they are aligned to each other. In natural language processing, such information is called aligned sentences or aligned documents. Here we call them aligned files. Taking Lucene as an example, the file \texttt{AbstractEncoder.cs} under C\# Lucence Client project has the same indicator \texttt{AbstractEncoder} with the file \texttt{AbstractEncoder.java} under Java Lucene Client project, so they are aligned to each other. We get around 13770 pairs of aligned implementation over 10 projects and we normalize all the pairs. Table 2 is an overview of our training data set.
+
+Table \ref{tab:dataset} is an overview of our training data set. In this paper, we consider the language pair C\# and Java in all the experiments. We collect data from 10 open source projects cross-lingually in C\# and Java. We get in total 13770 pairs of aligned files over 10 projects. 
 
 \begin{table*}
 	
@@ -220,11 +192,32 @@ We collect data from 10 open source projects cross-lingually in C\# and Java. Wi
 	\medskip
 \end{figure}
 \subsection{Training}
-We use the same settings as described in \cite{mikolov2013distributed}: stochastic gradient descent with a default learning rate 0.025, negative sampling with 30 samples, skip-gram with context window of size 10, and a subsampling rate of value 1e-4. All models are trained for 10 epochs and the learning rate is decayed to 0 once training is done. In Natural Language, according to \cite{pennington2014glove}, the number of words is usually large in the training set and we need a large dimension (range from 100 to 300) to capture the whole semantic meaning of the words. In our case, our training set is relatively smaller, so we choose 30 as the dimension size.
+We use the same settings as described in \cite{mikolov2013distributed}: stochastic gradient descent with a default learning rate 0.025, negative sampling with 30 samples, skip-gram with context window of size 10, and a subsampling rate of value 1e-4. We briefly desribe the meaning of such parameters:
+subsubsection{ Parameters of the skip-gram model}
+Here we want to give a brief explanation about the parameters that are being used for training with our data set.
+
+\textbf{Negative sampling}: Training a neural network means taking a training example and adjusting all of the neuron weights slightly so that it predicts that training sample more accurately. Each training sample will tweak all of the weights in the neural network, negative sampling addresses this by having each training sample only modify a small percentage of the weights, rather than all of them.
+
+\textbf{Subsampling rate}: In a nutshell, subsampling is a method of diluting very frequent words, akin to removing stop-words. The subsampling method presented in (Mikolov et al., 2013) \cite{mikolov2013distributed} randomly removes words that are more frequent than some threshold \textit{t} with a probability of \textit{p}.
+
+\textbf{Window size}: The window size is randomly chosen between 1 and max size for each training sample, resulting in words with the maximum distance being observed with a probability of 1/c while words directly next to the given word are always observed. For example, if the window is set to 5 then for the current word w surrounding 10 words will be taken as context words.
+
+All models are trained for 10 epochs and the learning rate is decayed to 0 once training is done. In Natural Language, according to \cite{pennington2014glove}, the number of words is usually large in the training set and we need a large dimension (range from 100 to 300) to capture the whole semantic meaning of the words. In our case, our training set is relatively smaller, so we choose 30 as the dimension size.
 \subsection{Evaluation Tasks}
-We evaluate our metho on 3 tasks: tokens mapping, elements mapping and clone detection. These 3 tasks represent for different granularities of programming language structure. Consider Figure \ref{figure:softwarelayers}, a program is usually constituted of different modules. A module could have a set of related functionalities and a functionality is represented as a set of classes. A class comprises of methods and a method comprises of smaller elements, such as expression, and statement. Thus a software program can be visualized as a hierarchical layer architecture of elements. Here we want to evaluate the effectiveness of our approach when mapping elements in cross languages in different granularities. In the tokens mapping task, we want to evaluate how effective our model is on the token level, the mapping at this level is important because this is served as a based level for a more high-level representation of source code. The elements mapping task represents a more coarse-grained level of source code. Formally, an element, such as expression, declaration or statement is a \textbf{semantic composition} of tokens in a structural way. Finally, we evaluate our approach by comparing the similarity of some "big" code fragments. We use the diff data set from \cite{cheng2017clcminer}, which contains the code hunk from the revision history, so called \textit{diff}. These may not complete code fragments but still, contain some structural and semantic meaning.
-\subsubsection{Tokens mapping}
-This task measures the semantic quality of the learned token vectors cross-lingually.  We manually defined the token-level alignment list between languages'as the ground truth. The types of tokens to be considered are the language keywords and the operator symbols (such as \&\&,$+$,$+=$, etc). For example, \textbf{\textit{readonly(C\#)}} should be aligned to \textbf{\textit{final(Java)}}. Then for each C\# keyword in the list, we take out the vector representation of that keyword in the C\# vector space, we use that keyword as the query to find k-nearest neighbors of that key word in the Java vector space based on Euclidean distance, we do this task in both directions, from C\# to Java, and from Java to C\#. 
+We evaluate our approach on 2 tasks: element mapping and clone detection. 
+
+The first task represent for different granularities of programming language structure. Consider Figure \ref{figure:softwarelayers}, a program is usually constituted of different modules. A module could have a set of related functionalities and a functionality is represented as a set of classes. A class comprises of methods and a method comprises of smaller elements, such as expression, and statement. Thus a software program can be visualized as a hierarchical layer architecture of elements. Here we want to evaluate the effectiveness of our approach when mapping elements in cross languages in different granularities. This task can be divided in 2 sub-tasks: token mapping and semantic composition mapping. In the tokens mapping task, we want to evaluate how effective our model is on the token level, the mapping at this level is important because this is served as a based level for a more high-level representation of source code. The semantic composition mapping task represents a more coarse-grained level of source code, which are compound elements. Formally, a compound element, such as expression, declaration or statement is a \textbf{semantic composition} of tokens in a structural way. 
+
+In the second task, we evaluate our approach by comparing the similarity of some "big" code fragments. We use the diff data set from \cite{cheng2017clcminer}, which contains the code hunk from the revision history, so called \textit{diff}. These may not complete code fragments but still, contain some structural and semantic meaning.
+\subsubsection{Token mapping}
+This task measures the semantic quality of the learned token vectors cross-lingually.  We manually defined the token-level alignment list between languages as the ground truth. The types of tokens to be considered are:
+\begin{description}
+	\item [$\bullet$] The language keywords, e.g. \texttt{if(C\#)} - \texttt{if(Java)}, \texttt{readonly(C\#)} - \texttt{final(Java)}.
+	\item [$\bullet$] The operator symbols, e.g. \texttt{+(C\#)} - \texttt{+(Java)}, \texttt{\&\&(C\#)} - \texttt{\&\&(Java)}.
+	\item [$\bullet$] Other arbitrary tokens, e.g. \texttt{dictionary(C\#)} - \texttt{map(Java)}, \texttt{list(C\#)} - \texttt{list(Java)}
+\end{description}
+
+Then for each C\# keyword in the list, we take out the vector representation of that keyword in the C\# vector space, we use that keyword as the query to find k-nearest neighbors of that key word in the Java vector space based on Euclidean distance, we do this task in both directions, from C\# to Java, and from Java to C\#. 
 
 Once we get the results, we calculate the Average Precision of that query. 
 The Average Precision can be calculated as follow:
@@ -249,7 +242,7 @@ where q is the query, and Q is the number of total queries.
 	\centering
 	
 	\includegraphics[width=1.05\textwidth]{avg_vs_tfidf}
-	\caption{Performance comparision of \textit{avg} and \textit{avg-tfidf} for the method mapping task. The y axis is the MAP score taken from top-5 queries for each project. The \textit{avg-tfidf} significantly boosts the MAP score and outperform the \textit{avg}.}
+	\caption{Performance comparision of \textit{avg} and \textit{avg-tfidf} for the method-level mapping task. The y axis is the MAP score taken from top-5 queries for each project. The \textit{avg-tfidf} significantly boosts the MAP score and outperform the \textit{avg}.}
 	\label{fig:avg_vs_tfidf}
 \end{figure*}
 
@@ -286,7 +279,7 @@ where q is the query, and Q is the number of total queries.
 	\label{tab:elements_mapping}
 	
 \end{table*}
-\subsubsection{Elements mapping}
+\subsubsection{Semantic composition mapping}
 In this task, we want to measure the semantic quality of the learned token vectors cross-lingually for semantic composition elements. In software engineering, expressions, definitions, declarations, statements, and functions are basic elements to constitute complicated functionality of a program. Our goal is to build a model that can find useful mappings between languages. A program is usually constituted of different modules. A module could have a set of related functionalities. A function in a module comprises of smaller elements, such as declaration, expression, and statement. Thus a software program can be visualized as a hierarchical layer architecture of elements. Figure \ref{figure:softwarelayers} illustrates layer architecture of such elements. We want to evaluate how we can map these elements between different languages together. We consider 3 levels of granularity in this task:
 
 \begin{description}
@@ -332,9 +325,9 @@ We take the vector representation of token stream from the source language as th
 \subsubsection{Clone detection}
 To evaluate the impact of our model on real world tasks, we apply our approach into the diff dataset from (Cheng at al., 2016)\cite{cheng2017clcminer} for clone detection. The dataset contains 2000 pairs of diff, one diff is from C\# and the other is from Java, each pair has been labeled either cloned or non-cloned. 
 
-For each diff, we perform normalization step (Section 3.1) to get the normalized version of the diff, also called as "token stream". We also get the vector representation of the token stream in 2 ways: vector averaging and vector averaging with TF-IDF.
+For each diff, we perform normalization step (Section \ref{sub:normalization}) to get the normalized version of the diff, also called as "token stream". We get the vector representation of the token stream in 2 ways: vector averaging and vector averaging with TF-IDF.
 
-Once we get the vector representations for each pair of diff o, we calculate the similarity between vectors by using the cosine similarity metric. We plot the probability mass function (PMF) of cosine similarity for all pairs of diff in Figure \ref{fig:clone_distribution}. Here we want to find the decision boundary to separate the 2 groups: cloned and none-cloned. 
+Once we get the vector representations for each pair of diff, we calculate the similarity between vectors by using the cosine similarity metric. We plot the probability mass function (PMF) of cosine similarity for all pairs of diff in Figure \ref{fig:clone_distribution}. Here we want to find the decision boundary to separate the 2 groups: cloned and none-cloned. 
 
 
 
@@ -345,11 +338,10 @@ Once we get the vector representations for each pair of diff o, we calculate the
 To have a better visualization for the vector representation of tokens, here we use t-Distributed Neighbor Embedding (t-SNE) \cite{maaten2008visualizing}, a technique for dimensionality reduction that is particulary well suited for the visualization of high-dimensional datasets. Figure \ref{fig:tsne} shows a visualization of shared embedding for some similar tokens between C\# and Java, each pair of similar tokens are close together, e.g \textit{\textbf{if (\text{C\#})}} should be closest to \textit{\textbf{if (Java)}} and clusters with similar functionality should be located close to each other than other clusters, e.g the \textit{\textbf{if}} cluster should be closer to the \textit{\textbf{for}} cluster because both \textit{\textbf{if}} and \textit{\textbf{for}} are control statement.
 
 
-
-Table \ref{tab:dataset} shows some example of top 5 most similar tokens once we take a token in the source language and find the most similar tokens in the target language, we demonstrate with some tokens that are supposed to be similar in bilingual languages.
+Table \ref{tab:nearest_neighbor_token_sample} shows some example of top 5 most similar tokens once we take a token in the source language and find the most similar tokens in the target language, we demonstrate with some tokens that are supposed to be similar in bilingual languages. We select 2 examples from each languages, the first row is the example of tokens in the source language, either from C\# or Java. The second row indicates the target language. The remains are the top-5 most similar tokens in the target language for the token in the source language.
 \begin{table}
 	
-	\label{tab:nearest_neighbor_token_sample}
+	
 	\resizebox{\columnwidth}{!}{
 		\begin{tabular}{cccc}
 			
@@ -368,11 +360,11 @@ Table \ref{tab:dataset} shows some example of top 5 most similar tokens once we 
 			
 	\end{tabular}}
 	\caption{Nearest neighbor tokens - shown are the top 5 nearest tokens when we take the vector of a word from the source vector space as the query to find the nearest neighbors in the target space, as measured by the Euclidean distance.}
-	
+	\label{tab:nearest_neighbor_token_sample}
 \end{table}
 
 
-Table \ref{tab:tokens_matching_top_k} shows the result when querying for 1-nearest neighbors, 3-nearest neighbors, 5-nearest neighbors, respectively.
+Table \ref{tab:tokens_matching_top_k} shows the result when querying for k-nearest neighbors, k = 1, 3, 5. The second row indicates the source language that are being used to query the target language for each k group. The third row is the MAP score for all queries in the source language.
 
 \begin{table}
 	
@@ -397,25 +389,21 @@ Table \ref{tab:tokens_matching_top_k} shows the result when querying for 1-neare
 \end{table}
 
 
-\subsubsection{Elements mapping}
-
-Table \ref{tab:elements_mapping} shown the MAP score for top-5 query of the elements mapping task per project. The TF-IDF weighting scheme improves the result significantly in all projects and for any direction, from C\# to Java and from Java to C\#. The performance improvement of TF-IDF scheme is present more obvious in Figure \ref{fig:avg_vs_tfidf}. In Figure \ref{fig:top_k}, we show the MAP score result for the methods mapping task for top-k queries (k = 1,5,10), the vector representations in Figure \ref{fig:top_k} are calculated by \textit{avg-tfidf}.
+\subsubsection{Semantic composition mapping}
 
 
+Table \ref{tab:elements_mapping} shown the MAP score for top-5 query of the semantic composition mapping task per project. The first row shows the type of the elements. The second row is the source language for each type. The third row is the way to get the vector representation for the element. The TF-IDF weighting scheme improves the result significantly in all projects and for any direction, from C\# to Java and from Java to C\#. Note that some part of a project may have significantly better result than the others, e.g. the method-level mapping of data stax, this is because the number of ground truth pairs of datastax is much lesser than others.
 
+The performance improvement of TF-IDF scheme is present more obvious in Figure \ref{fig:avg_vs_tfidf}. Figure \ref{fig:avg_vs_tfidf} shows the performance comparison between avg and \textit{avg-tfidf} for the method-level mapping task. The y-axis is the MAP score. The x-axis is the project, each project contains 2 bar charts, the red color bar charts show the MAP score for avg-tfidf, the blue ones show the MAP score for \textit{avg}. 
 
-
-
-
+In Figure \ref{fig:top_k}, we show the MAP result for the method-level mapping task for top-k queries (k = 1,5,10), with k corresponding to the color of the bar chart (blue, red, green). The vector representations in this Figure are calculated by \textit{avg-tfidf} since it significantly provides better result than the \textit{avg} in most of our experiments. The Figure shows that we can get a good MAP score for top-10 results. 
 
 \subsubsection{Clone Detection}
-Figure \ref{fig:clone_distribution} shows the probability mass function (PMF) of cosine similarity (COSIM) for all pairs of diff. The blue curve indicates the PMF of the cloned pairs, The yellow curve is for the non-cloned pairs. The x-axis is the COSIM value. The y-axis shows the probability distribution of an x-value. The COSIM of the non-cloned pairs ranges from -0.4 to 0.8 and most of them assemble equally from 0.3 to 0.7, while the COSIM of cloned pairs ranges from 0.6 to 1 and most of them assemble equally from 0.8 to 1.
+The cosine similarity of pairs is any random variable that ranges from 0 to 1. Figure \ref{fig:clone_distribution} shows the probability mass function (PMF) of cosine similarity for all pairs of diff. The PMF is a probability measure that gives us probabilities of the possible for a random variable. The blue curve indicates the PMF of the cloned pairs, The yellow curve is for the non-cloned pairs. The x-axis is the cosine similarity value. The y-axis shows the probability distribution of an x-value. The cosine similarity of the non-cloned pairs ranges from -0.4 to 0.8 and most of them assemble equally from 0.3 to 0.7, while the cosine similarity of cloned pairs ranges from 0.6 to 1 and most of them assemble equally from 0.8 to 1.
 
-Because of this difference in COSIM distribution between cloned and non-cloned pairs, there exists a decision boundary to separate them, then this task becomes a classification problem. The COSIM is the only feature for this classification model. We use these well-known classifiers: Logistic Regression, Support Vector Machine and Random Forest to evaluate this problem. For per-project's pairs, we use 10-fold validation to evaluate the performance of the classification model.
+Because of this difference in cosine similarity distribution between cloned and non-cloned pairs, there exists a decision boundary to segregate them, then this task becomes a classification problem. The cosine similarity is the only feature for this classification model. We use these well-known classifiers: Logistic Regression, Support Vector Machine and Random Forest to evaluate this problem. For per-project's pairs, we use 10-fold validation to evaluate the performance of the classification model. We calculate the precision and recall for each fold and calculate the average precision and recall over 10 folds.
 
-To prove that the normalization step provides a better representation of tokens, we do the same task for the "non-normalization" version of the data set. In Table \ref{tab:clone_detection}, there are 2 parts, the first part is the classification result when we apply the normalizing step into the training data, the second part is for the "non-normalization" version.
-
-
+To prove that the normalization step provides a better representation of tokens, we do the same task for the "non-normalization" version of the data set. Table \ref{tab:clone_detection} shown the classification result, the first row is the classifier. The second row is the version of the model, normalization, and non-normalization. The third rows are the average precision and average recall for 10-fold evaluation. The other rows are the projects.
 
 
 
@@ -479,7 +467,7 @@ Recall the intuition of Word2Vec, Word2Vec using large amounts of unannotated pl
 	\medskip
 \end{figure}
 
-\subsection{Tokens mapping}
+\subsection{Token mapping}
 Here we want to discuss some cases that not produce good AP score in the token mapping task. Consider the case "\texttt{:}" in C\#. The top 8 Java tokens once taking "\texttt{:}" as the query are \texttt{\{this, constructor, case, throw, extends, weight, implements, require\}}. 
 
 In C\#, the "\texttt{:}" usually appears in multiple contexts, it is used:
@@ -505,7 +493,7 @@ In C\#, the "\texttt{:}" usually appears in multiple contexts, it is used:
 
 With such multiple contexts, it is very difficult to distinguish between them because there are so many potential contexts that the token "\texttt{:}" may appear, this leads to a consequence that the token alignment step does not produce correct alignment for these tokens. There are quite some noises in the 10-nearest neighbor's result, they are some developer-defined token with semantic keyword added in our training phase (eg, constructor) and the language keywords (\texttt{extends} and \texttt{implements}), which supposed to belong to top 2 in results. An approach to this problem is to define the mapping between similar tokens as the initial alignments for the BiSkip model. With that, this becomes a semi-supervised problem, where we already have partial alignments initially. We leave this as a part of our futures works.
 
-\subsection{Semantic Composition}
+\subsection{Semantic Composition mapping}
 The TF-IDF weighting scheme improves the result of elements mapping and clone detection task significantly. Because this scheme penalizes the token that is so common, multiply this score to the vector representation of a token can reduce the "strength" of some common tokens which overwhelmed the others, hence affect the representation of the whole composition. For example, consider this example:
 \begin{lstlisting}
 int x = y; ==> expr_stmt expr identifier = identifier;
@@ -520,7 +508,11 @@ The statements and the methods are usually the compositions of some meaningful s
 We have seen that at character-level, the neural network model is capable of writing Linux kernel after learning the entire Linux-based source code, as described in \cite{Karpathy}. Thus the neural-based technique to generate source code is an achievable target. We believe that our work can be a good foundation for a neural network-based programming language translation, which is a more sophisticated task. 
 
 \section{Conclusion and Future Work}
-This work proposes an approach to learn the mappings between programming languages. By utilizing the alignment of files across languages, we can learn the alignment of tokens in an unsupervised manner, then we can learn the share embeddings between languages. The shared embeddings are able to bring the benefits to learn the semantic cross-lingually. We show that we can map most of the elements between languages accurately under a fine-grained manner. This can be served as a foundation for more complicated tasks, such as programming language translation. In the future, we want to extend our approach in highly dissimilar languages, e.g Haskell, Scala, Ruby, etc. We also aim to build a hierarchical architecture that can aggregate a better representation of complicated compound elements.
+This work proposes an approach to learn the mappings between programming languages. By utilizing the alignment of files across languages, we can learn the alignment of tokens in an unsupervised manner, then we can learn the share embeddings between languages. The shared embeddings are able to bring the benefits to learn the semantic cross-lingually. We show that we can map most of the elements between languages accurately under a fine-grained manner. This can be served as a foundation for more complicated tasks, such as programming language translation. 
+
+In the future, we want to examine tour approach in highly dissimilar language pair. An interesting study is to find mappings between functional style language with an object-oriented style language. For example, Scala vs Java, the functional properties of Scala help the developers to write code in a functional style that makes the code usually shorter than the similar code written Java, hence if we can find the mapping between highly dissimilar code structure, it's an interesting topic.
+
+We also aim to build a hierarchical architecture that can aggregate a better vector representation of complicated compound elements. The representation at each level can be useful for different tasks. For example, the vector representation of a whole program can be useful for program classification task. At a lower level, the vector representation of of the method can be useful if we want to detect cloned code in term of method level either in mono-language or across language.
 
 
 
